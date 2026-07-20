@@ -160,7 +160,7 @@ class PlayerStats:
         """Add money"""
         self.money = max(0, self.money + amount)
         self.total_earned += amount
-        logger.debug(f"Money: ${self.money} (Total: ${self.total_earned})")
+        logger.debug(f"Money: ₹{self.money} (Total: ₹{self.total_earned})")
     
     def spend_money(self, amount: int) -> bool:
         """Spend money"""
@@ -215,7 +215,7 @@ class Player:
         # Mission/Earning Method tracking
         self.active_missions: List[Dict] = []
         self.completed_missions: List[Dict] = []
-        self.earning_methods_completed: List[str] = []
+        self.earning_methods_available: List[str] = []
         
         # Earnings tracking
         self.earning_history: List[Dict] = []
@@ -323,7 +323,17 @@ class Player:
             self.stats.money = int(self.stats.money * 0.9)  # Lose 10% money
     
     def select_earning_method(self, method_type: str) -> bool:
-        """Select an earning method (Taxi Driver, Delivery, Vendor, etc.)"""
+        """Select an earning method"""
+        valid_methods = [
+            "taxi_driver", "delivery_boy", "street_vendor", "tutor",
+            "security_guard", "cook", "guide", "mechanic", 
+            "construction", "street_performer"
+        ]
+        
+        if method_type not in valid_methods:
+            logger.warning(f"Invalid earning method: {method_type}")
+            return False
+        
         if self.stats.has_selected_earning_method:
             logger.info(f"Player already has earning method: {self.stats.current_earning_method}")
             return False
@@ -355,72 +365,72 @@ class Player:
         opportunities = [
             {
                 "id": "taxi_driver",
-                "name": "Taxi Driver",
+                "name": "🚕 Taxi Driver",
                 "description": "Drive passengers around the city",
-                "pay_per_task": "200-500 rupees",
+                "pay_per_task": "₹200-500 per ride",
                 "skill": "driving"
             },
             {
                 "id": "delivery_boy",
-                "name": "Delivery Boy",
+                "name": "📦 Delivery Boy",
                 "description": "Deliver food and packages",
-                "pay_per_task": "150-300 rupees + tips",
+                "pay_per_task": "₹150-300 + tips",
                 "skill": "delivering"
             },
             {
                 "id": "street_vendor",
-                "name": "Street Vendor",
+                "name": "🏪 Street Vendor",
                 "description": "Sell goods in markets",
                 "pay_per_task": "10% commission",
                 "skill": "selling"
             },
             {
                 "id": "tutor",
-                "name": "Tutor",
+                "name": "📚 Tutor",
                 "description": "Teach children or adults",
-                "pay_per_task": "500-1000 rupees per session",
+                "pay_per_task": "₹500-1000 per session",
                 "skill": "teaching"
             },
             {
                 "id": "security_guard",
-                "name": "Security Guard",
+                "name": "🛡️ Security Guard",
                 "description": "Guard shops, buildings, or events",
-                "pay_per_task": "400 rupees daily",
+                "pay_per_task": "₹400 daily",
                 "skill": "strength"
             },
             {
                 "id": "cook",
-                "name": "Cook/Kitchen Helper",
+                "name": "👨‍🍳 Cook",
                 "description": "Work in restaurants or food stalls",
-                "pay_per_task": "600 rupees daily",
+                "pay_per_task": "₹600 daily",
                 "skill": "cooking"
             },
             {
-                "id": "tour_guide",
-                "name": "Tour Guide",
+                "id": "guide",
+                "name": "🎫 Tour Guide",
                 "description": "Guide tourists around landmarks",
-                "pay_per_task": "800 rupees per tour + tips",
+                "pay_per_task": "₹800 per tour + tips",
                 "skill": "guiding"
             },
             {
                 "id": "mechanic",
-                "name": "Mechanic",
+                "name": "🔧 Mechanic",
                 "description": "Repair and maintain vehicles",
-                "pay_per_task": "300-1000 rupees per job",
+                "pay_per_task": "₹300-1000 per job",
                 "skill": "strength"
             },
             {
                 "id": "construction",
-                "name": "Construction Worker",
+                "name": "🏗️ Construction Worker",
                 "description": "Work on building sites",
-                "pay_per_task": "500 rupees daily",
+                "pay_per_task": "₹500 daily",
                 "skill": "strength"
             },
             {
                 "id": "street_performer",
-                "name": "Street Performer",
+                "name": "🎭 Street Performer",
                 "description": "Entertain crowds and earn tips",
-                "pay_per_task": "Variable (tips)",
+                "pay_per_task": "Variable tips",
                 "skill": "charisma"
             }
         ]
