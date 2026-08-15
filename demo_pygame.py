@@ -10,6 +10,7 @@ Controls:
   I - add a sample item to inventory (toggle)
   H - take damage (simulate)
   J - heal
+  SPACE - interact with nearby NPC
   ESC or close window - quit
 
 Requires: pygame (pip install pygame)
@@ -19,6 +20,7 @@ import os
 import math
 import pygame
 from pygame import gfxdraw
+import time
 
 # Make src importable
 ROOT = os.path.dirname(__file__)
@@ -27,11 +29,12 @@ if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
 from entities.player import Player, PlayerClass
+from entities.npc import NPC, NPCType
+from entities.npc_interaction import NPCInteraction
 
 # Demo constants
 SCREEN_W, SCREEN_H = 800, 600
 BG_COLOR = (30, 30, 40)
-PLAYER_COLOR = (200, 160, 120)
 HUD_COLOR = (220, 220, 220)
 FONT_SIZE = 18
 
@@ -39,6 +42,10 @@ FONT_SIZE = 18
 def draw_text(surf, text, x, y, font, color=(255,255,255)):
     img = font.render(text, True, color)
     surf.blit(img, (x, y))
+
+
+def distance(a, b):
+    return math.hypot(a[0] - b[0], a[1] - b[1])
 
 
 def main():
@@ -49,7 +56,7 @@ def main():
         return
 
     screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
-    pygame.display.set_caption("Freecity India - Pygame Demo")
+    pygame.display.set_caption("Freecity India - Pygame Demo with NPCs")
     clock = pygame.time.Clock()
     font = pygame.font.SysFont("DejaVuSans", FONT_SIZE)
 
@@ -58,8 +65,15 @@ def main():
     p.x = SCREEN_W // 2
     p.y = SCREEN_H // 2
 
+    # Create a simple NPC
+    npc = NPC(npc_id="npc_001", name="Ramu", npc_type=NPCType.MERCHANT, x=p.x + 120, y=p.y)
+
+    npc_manager = NPCInteraction()
+
     running = True
     show_inventory_sample = False
+    last_dialogue = ""
+    dialogue_time = 0.0
 
     while running:
         dt = clock.tick(60) / 1000.0  # seconds
@@ -87,6 +101,12 @@ def main():
                     p.take_damage(20)
                 elif event.key == pygame.K_j:
                     p.stats.heal(15)
+                elif event.key == pygame.K_SPACE:
+                    # Interact if close
+                    if distance((p.x, p.y), (npc.x, npc.y)) < 80:
+                        dialogue = npc_manager.interact_with_npc(p, npc, interaction_type="talk")
+                        last_dialogue = dialogue or "..."
+                        dialogue_time = time.time()
 
         # Movement from pressed keys
         keys = pygame.key.get_pressed()
@@ -111,17 +131,9 @@ def main():
         # Draw
         screen.fill(BG_COLOR)
 
-        # Draw player as a circle with a simple facing line
-        px = int(p.x)
-        py = int(p.y)
-        radius = 16
-        gfxdraw.filled_circle(screen, px, py, radius, PLAYER_COLOR)
-        gfxdraw.aacircle(screen, px, py, radius, (0,0,0))
-
-        # facing direction line
-        fx = px + int(math.cos(p.direction) * radius * 1.5)
-        fy = py + int(math.sin(p.direction) * radius * 1.5)
-        pygame.draw.line(screen, (0,0,0), (px, py), (fx, fy), 2)
+        # Draw NPC and player using their draw methods
+        npc.draw(screen)
+        p.draw(screen)
 
         # HUD
         hud_x = 8
@@ -132,10 +144,22 @@ def main():
         draw_text(screen, f"XP: {p.stats.experience}  Level: {p.stats.level}", hud_x, hud_y + 66, font, HUD_COLOR)
         draw_text(screen, f"Status: {p.get_status_string()}", hud_x, hud_y + 88, font, HUD_COLOR)
 
+        # Dialogue box
+        if last_dialogue and time.time() - dialogue_time < 3.5:
+            # draw semi-transparent box
+            box_w = 560
+            box_h = 60
+            box_x = (SCREEN_W - box_w) // 2
+            box_y = SCREEN_H - box_h - 16
+            s = pygame.Surface((box_w, box_h), pygame.SRCALPHA)
+            s.fill((10, 10, 10, 200))
+            screen.blit(s, (box_x, box_y))
+            draw_text(screen, f"{npc.name}: {last_dialogue}", box_x + 8, box_y + 18, font, (240,240,240))
+
         # Instructions
         instr_x = 8
         instr_y = SCREEN_H - 120
-        draw_text(screen, "Controls: WASD / Arrows - Move | E - Earn ₹100 | I - Toggle samosa | H - Damage | J - Heal | ESC - Quit", instr_x, instr_y, font, HUD_COLOR)
+        draw_text(screen, "Controls: WASD / Arrows - Move | SPACE - Talk | E - Earn ₹100 | I - Toggle samosa | H - Damage | J - Heal | ESC - Quit", instr_x, instr_y, font, HUD_COLOR)
 
         pygame.display.flip()
 
