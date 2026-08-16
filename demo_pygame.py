@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
-Simple pygame demo for Freecity India Player
+Simple pygame demo for Freecity India Player - sprite version
 Save at the repository root and run:
   python3 demo_pygame.py
+
+This version will try to load assets/player.png, assets/npc.png, assets/ground.png (64x64)
+If they don't exist, it will generate simple flat-style sprites at runtime and save them to assets/.
 
 Controls:
   WASD / Arrow keys - move
@@ -19,7 +22,6 @@ import sys
 import os
 import math
 import pygame
-from pygame import gfxdraw
 import time
 
 # Make src importable
@@ -37,9 +39,76 @@ SCREEN_W, SCREEN_H = 800, 600
 BG_COLOR = (30, 30, 40)
 HUD_COLOR = (220, 220, 220)
 FONT_SIZE = 18
+ASSET_DIR = os.path.join(ROOT, "assets")
+SPRITE_SIZE = 64
 
 
-def draw_text(surf, text, x, y, font, color=(255,255,255)):
+def ensure_assets():
+    os.makedirs(ASSET_DIR, exist_ok=True)
+
+    player_path = os.path.join(ASSET_DIR, "player.png")
+    npc_path = os.path.join(ASSET_DIR, "npc.png")
+    ground_path = os.path.join(ASSET_DIR, "ground.png")
+
+    return player_path, npc_path, ground_path
+
+
+def generate_sprites(screen):
+    # Create simple flat-style sprites (64x64) and save them to assets
+    player_surf = pygame.Surface((SPRITE_SIZE, SPRITE_SIZE), pygame.SRCALPHA)
+    npc_surf = pygame.Surface((SPRITE_SIZE, SPRITE_SIZE), pygame.SRCALPHA)
+    ground_surf = pygame.Surface((SPRITE_SIZE, SPRITE_SIZE))
+
+    # Ground: simple checker-ish tile
+    ground_surf.fill((100, 150, 90))
+    pygame.draw.rect(ground_surf, (90, 140, 80), (0, 0, SPRITE_SIZE // 2, SPRITE_SIZE // 2))
+    pygame.draw.rect(ground_surf, (110, 160, 100), (SPRITE_SIZE // 2, SPRITE_SIZE // 2, SPRITE_SIZE // 2, SPRITE_SIZE // 2))
+
+    # Player: round character with clothing
+    player_surf.fill((0, 0, 0, 0))
+    pygame.draw.circle(player_surf, (200, 160, 120), (SPRITE_SIZE // 2, SPRITE_SIZE // 2 - 6), 18)  # head / face
+    pygame.draw.rect(player_surf, (50, 100, 200), (SPRITE_SIZE // 2 - 18, SPRITE_SIZE // 2 + 8, 36, 26))  # body
+    pygame.draw.circle(player_surf, (0, 0, 0), (SPRITE_SIZE // 2 + 14, SPRITE_SIZE // 2 - 10), 3)  # eye
+
+    # NPC: different color
+    npc_surf.fill((0, 0, 0, 0))
+    pygame.draw.circle(npc_surf, (120, 200, 160), (SPRITE_SIZE // 2, SPRITE_SIZE // 2 - 6), 16)
+    pygame.draw.rect(npc_surf, (160, 110, 60), (SPRITE_SIZE // 2 - 16, SPRITE_SIZE // 2 + 8, 32, 24))
+
+    # Save to files
+    player_path, npc_path, ground_path = ensure_assets()
+    try:
+        pygame.image.save(player_surf, player_path)
+        pygame.image.save(npc_surf, npc_path)
+        pygame.image.save(ground_surf, ground_path)
+    except Exception:
+        # On some platforms saving may fail (permissions); ignore silently
+        pass
+
+    return player_surf, npc_surf, ground_surf
+
+
+def load_or_generate_sprites(screen):
+    player_path, npc_path, ground_path = ensure_assets()
+
+    def try_load(path):
+        try:
+            return pygame.image.load(path).convert_alpha()
+        except Exception:
+            return None
+
+    player_img = try_load(player_path)
+    npc_img = try_load(npc_path)
+    ground_img = try_load(ground_path)
+
+    if player_img and npc_img and ground_img:
+        return player_img, npc_img, ground_img
+
+    # Otherwise generate and save
+    return generate_sprites(screen)
+
+
+def draw_text(surf, text, x, y, font, color=(255, 255, 255)):
     img = font.render(text, True, color)
     surf.blit(img, (x, y))
 
@@ -56,9 +125,12 @@ def main():
         return
 
     screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
-    pygame.display.set_caption("Freecity India - Pygame Demo with NPCs")
+    pygame.display.set_caption("Freecity India - Pygame Demo (Sprites)")
     clock = pygame.time.Clock()
     font = pygame.font.SysFont("DejaVuSans", FONT_SIZE)
+
+    # Load or generate sprites
+    player_img, npc_img, ground_img = load_or_generate_sprites(screen)
 
     # Create player and position at center
     p = Player(name="Asha", character_class=PlayerClass.TRADER, player_id="player_pg_001")
@@ -104,8 +176,8 @@ def main():
                 elif event.key == pygame.K_SPACE:
                     # Interact if close
                     if distance((p.x, p.y), (npc.x, npc.y)) < 80:
-                        dialogue = npc_manager.interact_with_npc(p, npc, interaction_type="talk")
-                        last_dialogue = dialogue or "..."
+                        res = npc_manager.interact_with_npc(p, npc, interaction_type="talk")
+                        last_dialogue = res.get("message", "...")
                         dialogue_time = time.time()
 
         # Movement from pressed keys
@@ -128,12 +200,18 @@ def main():
         p.x = max(16, min(SCREEN_W - 16, p.x))
         p.y = max(16, min(SCREEN_H - 16, p.y))
 
-        # Draw
-        screen.fill(BG_COLOR)
+        # Draw ground tiled
+        for gx in range(0, SCREEN_W, SPRITE_SIZE):
+            for gy in range(0, SCREEN_H, SPRITE_SIZE):
+                screen.blit(ground_img, (gx, gy))
 
-        # Draw NPC and player using their draw methods
-        npc.draw(screen)
-        p.draw(screen)
+        # Draw NPC and player using sprites (centered)
+        def blit_center(img, x, y):
+            iw, ih = img.get_size()
+            screen.blit(img, (int(x - iw / 2), int(y - ih / 2)))
+
+        blit_center(npc_img, npc.x, npc.y)
+        blit_center(player_img, p.x, p.y)
 
         # HUD
         hud_x = 8
