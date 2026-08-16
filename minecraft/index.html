@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft - Voxel Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            overflow: hidden;
+        }
+
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+
+        #hud {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+        }
+
+        .inventory-slot {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+
+        .inventory-slot.selected {
+            border-color: #fff;
+            background: rgba(100, 100, 100, 0.7);
+        }
+
+        .inventory-slot div {
+            text-align: center;
+            font-size: 12px;
+        }
+
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            max-width: 300px;
+        }
+
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        #crosshair::before {
+            width: 2px;
+            height: 6px;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #crosshair::after {
+            width: 6px;
+            height: 2px;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="crosshair"></div>
+    <div id="info">
+        <div>MINECRAFT - Voxel Edition</div>
+        <div style="margin-top: 5px; font-size: 11px;">
+            <div>WASD - Move | SPACE - Jump | Shift - Sprint</div>
+            <div>Left Click - Destroy | Right Click - Place</div>
+            <div>1-9 - Select Block | Esc - Pause</div>
+            <div id="coords"></div>
+        </div>
+    </div>
+    <div id="hud"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
