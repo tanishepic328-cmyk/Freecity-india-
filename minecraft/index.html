@@ -2,13 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Minecraft - Voxel Game</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            position: fixed;
         }
 
         body {
@@ -21,100 +30,7 @@
         #canvas {
             display: block;
             width: 100%;
-            height: 100vh;
-        }
-
-        /* Main HUD */
-        #hud {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-            z-index: 100;
-        }
-
-        .inventory-slot {
-            width: 60px;
-            height: 60px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 3px solid #8b8b8b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 11px;
-            text-align: center;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .inventory-slot:hover {
-            background: rgba(100, 100, 100, 0.6);
-            transform: scale(1.05);
-        }
-
-        .inventory-slot.selected {
-            border: 3px solid #fff;
-            background: rgba(200, 200, 200, 0.8);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .inventory-slot div {
-            text-align: center;
-            font-size: 10px;
-            line-height: 1.2;
-        }
-
-        .inventory-slot-name {
-            font-weight: bold;
-            margin-bottom: 2px;
-        }
-
-        .inventory-slot-key {
-            font-size: 9px;
-            opacity: 0.7;
-        }
-
-        /* Top Info Panel */
-        #info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #fff;
-            font-size: 14px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px 20px;
-            border: 2px solid #8b8b8b;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-            font-family: 'Courier New', monospace;
-            min-width: 280px;
-        }
-
-        #info > div:first-child {
-            font-size: 18px;
-            font-weight: bold;
-            color: #5cb85c;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-        }
-
-        #info-text {
-            font-size: 12px;
-            line-height: 1.6;
-        }
-
-        #info-text div {
-            margin: 4px 0;
-        }
-
-        #coords {
-            color: #ffff00;
-            font-weight: bold;
-            margin-top: 8px;
+            height: 100%;
         }
 
         /* Crosshair */
@@ -134,6 +50,215 @@
             height: 100%;
         }
 
+        /* Top Left Info Panel */
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border: 2px solid #8b8b8b;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            font-family: 'Courier New', monospace;
+            min-width: 250px;
+            max-width: 90vw;
+            z-index: 100;
+        }
+
+        #info > div:first-child {
+            font-size: 14px;
+            font-weight: bold;
+            color: #5cb85c;
+            margin-bottom: 8px;
+        }
+
+        #info-text {
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        #coords {
+            color: #ffff00;
+            font-weight: bold;
+            margin-top: 6px;
+        }
+
+        /* Top Right Status Bar */
+        #status-bar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #8b8b8b;
+            padding: 10px 15px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            min-width: 150px;
+            max-width: 90vw;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            z-index: 100;
+        }
+
+        .status-item {
+            margin: 3px 0;
+        }
+
+        .status-label {
+            color: #888;
+            font-size: 9px;
+        }
+
+        .status-value {
+            color: #5cb85c;
+            font-weight: bold;
+        }
+
+        /* Bottom Inventory */
+        #hud {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+            z-index: 100;
+            overflow-x: auto;
+            padding: 0 10px;
+            max-width: 95vw;
+        }
+
+        .inventory-slot {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8b8b8b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 9px;
+            text-align: center;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+        }
+
+        .inventory-slot:active {
+            background: rgba(100, 100, 100, 0.6);
+            transform: scale(0.95);
+        }
+
+        .inventory-slot.selected {
+            border: 2px solid #fff;
+            background: rgba(200, 200, 200, 0.8);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Mobile Controls */
+        #mobile-controls {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            left: 10px;
+            width: 130px;
+            height: 130px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #8b8b8b;
+            border-radius: 50%;
+            z-index: 100;
+        }
+
+        #mobile-controls.active {
+            display: block;
+        }
+
+        #joystick {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #joystick-thumb {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(200, 200, 200, 0.8);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.05s;
+        }
+
+        /* Action Buttons */
+        #action-buttons {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            right: 10px;
+            gap: 8px;
+            z-index: 100;
+            flex-direction: column;
+        }
+
+        #action-buttons.active {
+            display: flex;
+        }
+
+        .action-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #8b8b8b;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.1s;
+            touch-action: none;
+        }
+
+        .action-btn:active {
+            background: rgba(100, 100, 100, 0.8);
+            transform: scale(0.9);
+        }
+
+        /* Block Preview */
+        #block-preview {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #8b8b8b;
+            padding: 10px 15px;
+            color: #fff;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            z-index: 100;
+        }
+
+        #block-preview.active {
+            display: block;
+        }
+
+        .block-info-title {
+            color: #ffff00;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
         /* Pause Menu */
         #pause-menu {
             position: absolute;
@@ -141,7 +266,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             display: none;
             justify-content: center;
             align-items: center;
@@ -154,143 +279,95 @@
         }
 
         .pause-title {
-            font-size: 48px;
+            font-size: 32px;
             font-weight: bold;
             color: #5cb85c;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
         }
 
         .pause-content {
             background: rgba(0, 0, 0, 0.8);
-            border: 4px solid #8b8b8b;
-            padding: 30px 50px;
-            max-width: 500px;
+            border: 3px solid #8b8b8b;
+            padding: 20px 30px;
+            max-width: 90vw;
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+            text-align: center;
         }
 
         .pause-text {
             color: #fff;
-            font-size: 16px;
-            line-height: 2;
-            text-align: center;
+            font-size: 14px;
+            line-height: 1.8;
+            margin: 10px 0;
         }
 
         .pause-text strong {
             color: #ffff00;
         }
 
-        /* Status Bar */
-        #status-bar {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #8b8b8b;
-            padding: 15px 20px;
-            color: #fff;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            min-width: 250px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-        }
-
-        .status-item {
-            margin: 5px 0;
-        }
-
-        .status-label {
-            color: #888;
-            font-size: 10px;
-        }
-
-        .status-value {
-            color: #5cb85c;
+        .resume-btn {
+            background: #5cb85c;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-size: 14px;
             font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            touch-action: manipulation;
         }
 
-        /* Block Preview */
-        #block-preview {
-            position: absolute;
-            bottom: 100px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #8b8b8b;
-            padding: 15px;
-            border-radius: 5px;
-            color: #fff;
-            font-size: 12px;
-            font-family: 'Courier New', monospace;
-            min-width: 200px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        .resume-btn:active {
+            transform: scale(0.95);
         }
 
-        .block-info-title {
-            color: #ffff00;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .block-info {
-            margin: 4px 0;
-        }
-
-        /* Tutorial/Help */
-        #help-overlay {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #8b8b8b;
-            padding: 15px 20px;
-            color: #aaa;
-            font-size: 11px;
-            max-width: 250px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-            line-height: 1.5;
-        }
-
-        .help-title {
-            color: #5cb85c;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .help-item {
-            margin: 5px 0;
-        }
-
-        .help-key {
-            color: #ffff00;
-            font-weight: bold;
-        }
-
-        /* Responsive */
+        /* Device Detection */
         @media (max-width: 768px) {
             #info {
-                font-size: 12px;
-                padding: 10px 15px;
-                left: 10px;
-                top: 10px;
+                font-size: 10px;
                 min-width: auto;
+                top: 5px;
+                left: 5px;
+            }
+
+            #info > div:first-child {
+                font-size: 12px;
             }
 
             #status-bar {
-                right: 10px;
-                top: 10px;
                 font-size: 10px;
-                padding: 10px 15px;
+                min-width: auto;
+                top: 5px;
+                right: 5px;
             }
 
             .inventory-slot {
-                width: 50px;
-                height: 50px;
-                font-size: 9px;
+                width: 45px;
+                height: 45px;
+                font-size: 8px;
             }
 
             #hud {
-                bottom: 20px;
-                gap: 5px;
+                bottom: 75px;
+            }
+        }
+
+        /* Landscape mode */
+        @media (max-height: 500px) {
+            #info {
+                font-size: 9px;
+                padding: 8px 10px;
+            }
+
+            #status-bar {
+                font-size: 9px;
+                padding: 8px 10px;
+            }
+
+            #hud {
+                bottom: 10px;
             }
         }
     </style>
@@ -309,56 +386,50 @@
         </svg>
     </div>
 
-    <!-- Top Left Info Panel -->
+    <!-- Top Left Info -->
     <div id="info">
         <div>⛏️ MINECRAFT</div>
         <div id="info-text">
-            <div>🎮 <strong>WASD</strong> - Move</div>
-            <div>🔧 <strong>SPACE</strong> - Jump | <strong>SHIFT</strong> - Sprint</div>
-            <div>👆 <strong>LMB</strong> - Destroy | <strong>RMB</strong> - Place</div>
-            <div>🔢 <strong>1-9</strong> - Select Block | <strong>ESC</strong> - Pause</div>
-            <div id="coords">📍 Pos: X:0 Y:0 Z:0</div>
+            <div>Move | Jump | Sprint</div>
+            <div id="coords">📍 X:0 Y:0 Z:0</div>
         </div>
     </div>
 
-    <!-- Top Right Status Bar -->
+    <!-- Top Right Status -->
     <div id="status-bar">
         <div class="status-item">
             <div class="status-label">FPS</div>
             <div class="status-value" id="fps">60</div>
         </div>
         <div class="status-item">
-            <div class="status-label">CHUNKS LOADED</div>
+            <div class="status-label">CHUNKS</div>
             <div class="status-value" id="chunks">0</div>
         </div>
         <div class="status-item">
-            <div class="status-label">MEMORY</div>
-            <div class="status-value" id="memory">0 MB</div>
-        </div>
-        <div class="status-item">
-            <div class="status-label">SELECTED BLOCK</div>
+            <div class="status-label">BLOCK</div>
             <div class="status-value" id="selected-block">Grass</div>
         </div>
     </div>
 
-    <!-- Left Side Block Preview -->
+    <!-- Block Preview (Mobile) -->
     <div id="block-preview">
         <div class="block-info-title">🔍 Looking At:</div>
-        <div class="block-info">
-            <strong id="block-name">Air</strong>
-        </div>
-        <div class="block-info" style="font-size: 10px; color: #888;">
-            Distance: <span id="block-distance">-</span>m
+        <div id="block-name">Air</div>
+    </div>
+
+    <!-- Mobile Joystick -->
+    <div id="mobile-controls">
+        <div id="joystick">
+            <div id="joystick-thumb"></div>
         </div>
     </div>
 
-    <!-- Right Side Help -->
-    <div id="help-overlay">
-        <div class="help-title">❓ QUICK HELP</div>
-        <div class="help-item">Click to lock mouse</div>
-        <div class="help-item">Press <span class="help-key">ESC</span> to pause</div>
-        <div class="help-item">Build with <span class="help-key">RMB</span></div>
-        <div class="help-item">Mine with <span class="help-key">LMB</span></div>
+    <!-- Action Buttons (Mobile) -->
+    <div id="action-buttons">
+        <button class="action-btn" id="btn-destroy" title="Destroy (Tap)">⛏️</button>
+        <button class="action-btn" id="btn-place" title="Place (Long Tap)">📦</button>
+        <button class="action-btn" id="btn-jump" title="Jump">⬆️</button>
+        <button class="action-btn" id="btn-pause" title="Pause">⏸️</button>
     </div>
 
     <!-- Inventory HUD -->
@@ -369,55 +440,155 @@
         <div class="pause-title">⏸️ PAUSED</div>
         <div class="pause-content">
             <div class="pause-text">
-                <div><strong>Press ESC</strong> to resume</div>
-                <div style="margin-top: 20px; font-size: 12px; color: #888;">
-                    Minecraft Voxel Game v1.0
+                <div><strong>Minecraft Voxel Game</strong></div>
+                <div style="font-size: 12px; color: #888; margin-top: 10px;">
+                    Desktop: ESC to resume<br>
+                    Mobile: Press Resume button
                 </div>
             </div>
+            <button class="resume-btn" id="resume-btn">RESUME GAME</button>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="game.js"></script>
     <script>
-        // UI Management
-        let lastFrameTime = performance.now();
-        let frameCount = 0;
-        let fps = 0;
+        // Device Detection
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isTablet = /iPad|Android/.test(navigator.userAgent);
 
-        function updateUIInfo() {
-            const now = performance.now();
-            frameCount++;
+        if (isMobile) {
+            document.getElementById('mobile-controls').classList.add('active');
+            document.getElementById('action-buttons').classList.add('active');
+            document.getElementById('block-preview').classList.add('active');
+            document.body.style.width = '100vw';
+            document.body.style.height = '100vh';
+        }
 
-            if (now >= lastFrameTime + 1000) {
-                fps = frameCount;
-                document.getElementById('fps').textContent = fps;
-                frameCount = 0;
-                lastFrameTime = now;
-            }
+        // Mobile Controls
+        let joystickActive = false;
+        let joystickX = 0, joystickY = 0;
 
-            // Update memory if available
-            if (performance.memory) {
-                const mb = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
-                document.getElementById('memory').textContent = mb + ' MB';
+        const joystick = document.getElementById('mobile-controls');
+        const joystickThumb = document.getElementById('joystick-thumb');
+
+        if (isMobile) {
+            // Joystick Control
+            joystick.addEventListener('touchstart', (e) => {
+                joystickActive = true;
+            });
+
+            joystick.addEventListener('touchmove', (e) => {
+                if (!joystickActive) return;
+                const touch = e.touches[0];
+                const rect = joystick.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                joystickX = (touch.clientX - centerX) / (rect.width / 2);
+                joystickY = (touch.clientY - centerY) / (rect.height / 2);
+
+                const distance = Math.sqrt(joystickX ** 2 + joystickY ** 2);
+                if (distance > 1) {
+                    joystickX /= distance;
+                    joystickY /= distance;
+                }
+
+                const thumbX = joystickX * 40;
+                const thumbY = joystickY * 40;
+                joystickThumb.style.transform = `translate(calc(-50% + ${thumbX}px), calc(-50% + ${thumbY}px))`;
+            });
+
+            joystick.addEventListener('touchend', () => {
+                joystickActive = false;
+                joystickX = joystickY = 0;
+                joystickThumb.style.transform = 'translate(-50%, -50%)';
+            });
+
+            // Action Buttons
+            document.getElementById('btn-destroy').addEventListener('touchstart', () => {
+                window.mobileDestroyBlock = true;
+            });
+
+            document.getElementById('btn-destroy').addEventListener('touchend', () => {
+                window.mobileDestroyBlock = false;
+            });
+
+            document.getElementById('btn-place').addEventListener('touchstart', () => {
+                window.mobilePlaceBlock = true;
+            });
+
+            document.getElementById('btn-place').addEventListener('touchend', () => {
+                window.mobilePlaceBlock = false;
+            });
+
+            document.getElementById('btn-jump').addEventListener('touchstart', () => {
+                window.mobileJump = true;
+            });
+
+            document.getElementById('btn-jump').addEventListener('touchend', () => {
+                window.mobileJump = false;
+            });
+
+            document.getElementById('btn-pause').addEventListener('click', () => {
+                const pauseMenu = document.getElementById('pause-menu');
+                pauseMenu.classList.toggle('active');
+            });
+
+            // Resume Button
+            document.getElementById('resume-btn').addEventListener('click', () => {
+                document.getElementById('pause-menu').classList.remove('active');
+            });
+
+            // Block selection swipe
+            let startX = 0;
+            document.getElementById('hud').addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+            });
+
+            document.getElementById('hud').addEventListener('touchend', (e) => {
+                const endX = e.changedTouches[0].clientX;
+                const diff = startX - endX;
+                if (Math.abs(diff) > 30) {
+                    window.mobileSwipeBlock = diff > 0 ? -1 : 1;
+                }
+            });
+
+            // Mobile gyroscope for look (optional)
+            if (window.DeviceOrientationEvent && !isTablet) {
+                window.addEventListener('deviceorientation', (e) => {
+                    window.gyroAlpha = e.alpha || 0;
+                    window.gyroBeta = e.beta || 0;
+                    window.gyroGamma = e.gamma || 0;
+                });
             }
         }
 
-        // Pause menu
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const pauseMenu = document.getElementById('pause-menu');
-                pauseMenu.classList.toggle('active');
-                if (pauseMenu.classList.contains('active')) {
-                    document.exitPointerLock?.();
-                } else {
-                    document.getElementById('canvas').requestPointerLock?.();
+        // Desktop Pause
+        if (!isMobile) {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const pauseMenu = document.getElementById('pause-menu');
+                    pauseMenu.classList.toggle('active');
                 }
-            }
-        });
+            });
 
-        // Animate FPS counter
-        setInterval(updateUIInfo, 16);
+            document.getElementById('resume-btn').addEventListener('click', () => {
+                document.getElementById('pause-menu').classList.remove('active');
+                document.getElementById('canvas').requestPointerLock();
+            });
+        }
+
+        // UI Stats
+        let frameCount = 0, lastTime = performance.now();
+        setInterval(() => {
+            const now = performance.now();
+            if (now >= lastTime + 1000) {
+                document.getElementById('fps').textContent = frameCount;
+                frameCount = 0;
+                lastTime = now;
+            }
+        }, 16);
     </script>
 </body>
 </html>
