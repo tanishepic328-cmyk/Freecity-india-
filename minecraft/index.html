@@ -12,9 +12,10 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Minecraft', 'Arial', sans-serif;
             background: #000;
             overflow: hidden;
+            color: #fff;
         }
 
         #canvas {
@@ -23,100 +24,400 @@
             height: 100vh;
         }
 
+        /* Main HUD */
         #hud {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 5px;
+            gap: 8px;
+            z-index: 100;
         }
 
         .inventory-slot {
-            width: 50px;
-            height: 50px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #888;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #8b8b8b;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            color: white;
+            color: #fff;
             cursor: pointer;
+            transition: all 0.2s;
+            font-size: 11px;
+            text-align: center;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .inventory-slot:hover {
+            background: rgba(100, 100, 100, 0.6);
+            transform: scale(1.05);
         }
 
         .inventory-slot.selected {
-            border-color: #fff;
-            background: rgba(100, 100, 100, 0.7);
+            border: 3px solid #fff;
+            background: rgba(200, 200, 200, 0.8);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
         .inventory-slot div {
             text-align: center;
-            font-size: 12px;
+            font-size: 10px;
+            line-height: 1.2;
         }
 
+        .inventory-slot-name {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .inventory-slot-key {
+            font-size: 9px;
+            opacity: 0.7;
+        }
+
+        /* Top Info Panel */
         #info {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            font-size: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            max-width: 300px;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 20px;
+            border: 2px solid #8b8b8b;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            font-family: 'Courier New', monospace;
+            min-width: 280px;
         }
 
+        #info > div:first-child {
+            font-size: 18px;
+            font-weight: bold;
+            color: #5cb85c;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        #info-text {
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        #info-text div {
+            margin: 4px 0;
+        }
+
+        #coords {
+            color: #ffff00;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        /* Crosshair */
         #crosshair {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
+            width: 24px;
+            height: 24px;
             pointer-events: none;
+            z-index: 1000;
         }
 
-        #crosshair::before,
-        #crosshair::after {
-            content: '';
+        #crosshair svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Pause Menu */
+        #pause-menu {
             position: absolute;
-            background: rgba(255, 255, 255, 0.5);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
         }
 
-        #crosshair::before {
-            width: 2px;
-            height: 6px;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
+        #pause-menu.active {
+            display: flex;
         }
 
-        #crosshair::after {
-            width: 6px;
-            height: 2px;
-            left: -8px;
-            top: 50%;
-            transform: translateY(-50%);
+        .pause-title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #5cb85c;
+            margin-bottom: 40px;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .pause-content {
+            background: rgba(0, 0, 0, 0.8);
+            border: 4px solid #8b8b8b;
+            padding: 30px 50px;
+            max-width: 500px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+        }
+
+        .pause-text {
+            color: #fff;
+            font-size: 16px;
+            line-height: 2;
+            text-align: center;
+        }
+
+        .pause-text strong {
+            color: #ffff00;
+        }
+
+        /* Status Bar */
+        #status-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #8b8b8b;
+            padding: 15px 20px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            min-width: 250px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .status-item {
+            margin: 5px 0;
+        }
+
+        .status-label {
+            color: #888;
+            font-size: 10px;
+        }
+
+        .status-value {
+            color: #5cb85c;
+            font-weight: bold;
+        }
+
+        /* Block Preview */
+        #block-preview {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #8b8b8b;
+            padding: 15px;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            min-width: 200px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .block-info-title {
+            color: #ffff00;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .block-info {
+            margin: 4px 0;
+        }
+
+        /* Tutorial/Help */
+        #help-overlay {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8b8b8b;
+            padding: 15px 20px;
+            color: #aaa;
+            font-size: 11px;
+            max-width: 250px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            line-height: 1.5;
+        }
+
+        .help-title {
+            color: #5cb85c;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .help-item {
+            margin: 5px 0;
+        }
+
+        .help-key {
+            color: #ffff00;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #info {
+                font-size: 12px;
+                padding: 10px 15px;
+                left: 10px;
+                top: 10px;
+                min-width: auto;
+            }
+
+            #status-bar {
+                right: 10px;
+                top: 10px;
+                font-size: 10px;
+                padding: 10px 15px;
+            }
+
+            .inventory-slot {
+                width: 50px;
+                height: 50px;
+                font-size: 9px;
+            }
+
+            #hud {
+                bottom: 20px;
+                gap: 5px;
+            }
         }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
-    <div id="crosshair"></div>
+
+    <!-- Crosshair -->
+    <div id="crosshair">
+        <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="8" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+            <line x1="50" y1="30" x2="50" y2="40" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+            <line x1="50" y1="60" x2="50" y2="70" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+            <line x1="30" y1="50" x2="40" y2="50" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+            <line x1="60" y1="50" x2="70" y2="50" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+        </svg>
+    </div>
+
+    <!-- Top Left Info Panel -->
     <div id="info">
-        <div>MINECRAFT - Voxel Edition</div>
-        <div style="margin-top: 5px; font-size: 11px;">
-            <div>WASD - Move | SPACE - Jump | Shift - Sprint</div>
-            <div>Left Click - Destroy | Right Click - Place</div>
-            <div>1-9 - Select Block | Esc - Pause</div>
-            <div id="coords"></div>
+        <div>⛏️ MINECRAFT</div>
+        <div id="info-text">
+            <div>🎮 <strong>WASD</strong> - Move</div>
+            <div>🔧 <strong>SPACE</strong> - Jump | <strong>SHIFT</strong> - Sprint</div>
+            <div>👆 <strong>LMB</strong> - Destroy | <strong>RMB</strong> - Place</div>
+            <div>🔢 <strong>1-9</strong> - Select Block | <strong>ESC</strong> - Pause</div>
+            <div id="coords">📍 Pos: X:0 Y:0 Z:0</div>
         </div>
     </div>
+
+    <!-- Top Right Status Bar -->
+    <div id="status-bar">
+        <div class="status-item">
+            <div class="status-label">FPS</div>
+            <div class="status-value" id="fps">60</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">CHUNKS LOADED</div>
+            <div class="status-value" id="chunks">0</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">MEMORY</div>
+            <div class="status-value" id="memory">0 MB</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">SELECTED BLOCK</div>
+            <div class="status-value" id="selected-block">Grass</div>
+        </div>
+    </div>
+
+    <!-- Left Side Block Preview -->
+    <div id="block-preview">
+        <div class="block-info-title">🔍 Looking At:</div>
+        <div class="block-info">
+            <strong id="block-name">Air</strong>
+        </div>
+        <div class="block-info" style="font-size: 10px; color: #888;">
+            Distance: <span id="block-distance">-</span>m
+        </div>
+    </div>
+
+    <!-- Right Side Help -->
+    <div id="help-overlay">
+        <div class="help-title">❓ QUICK HELP</div>
+        <div class="help-item">Click to lock mouse</div>
+        <div class="help-item">Press <span class="help-key">ESC</span> to pause</div>
+        <div class="help-item">Build with <span class="help-key">RMB</span></div>
+        <div class="help-item">Mine with <span class="help-key">LMB</span></div>
+    </div>
+
+    <!-- Inventory HUD -->
     <div id="hud"></div>
+
+    <!-- Pause Menu -->
+    <div id="pause-menu">
+        <div class="pause-title">⏸️ PAUSED</div>
+        <div class="pause-content">
+            <div class="pause-text">
+                <div><strong>Press ESC</strong> to resume</div>
+                <div style="margin-top: 20px; font-size: 12px; color: #888;">
+                    Minecraft Voxel Game v1.0
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="game.js"></script>
+    <script>
+        // UI Management
+        let lastFrameTime = performance.now();
+        let frameCount = 0;
+        let fps = 0;
+
+        function updateUIInfo() {
+            const now = performance.now();
+            frameCount++;
+
+            if (now >= lastFrameTime + 1000) {
+                fps = frameCount;
+                document.getElementById('fps').textContent = fps;
+                frameCount = 0;
+                lastFrameTime = now;
+            }
+
+            // Update memory if available
+            if (performance.memory) {
+                const mb = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
+                document.getElementById('memory').textContent = mb + ' MB';
+            }
+        }
+
+        // Pause menu
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const pauseMenu = document.getElementById('pause-menu');
+                pauseMenu.classList.toggle('active');
+                if (pauseMenu.classList.contains('active')) {
+                    document.exitPointerLock?.();
+                } else {
+                    document.getElementById('canvas').requestPointerLock?.();
+                }
+            }
+        });
+
+        // Animate FPS counter
+        setInterval(updateUIInfo, 16);
+    </script>
 </body>
 </html>
